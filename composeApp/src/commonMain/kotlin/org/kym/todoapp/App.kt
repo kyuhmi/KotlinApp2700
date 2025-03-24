@@ -99,6 +99,7 @@ fun HomeScreen(navController: NavController) {
 }
 
 // Detail Screen
+@Composable
 fun DetailScreen(navController: NavController, userId: String) {
     // Example: Get a different ViewModel instance per screen (if needed).  Koin handles this.
     //val detailViewModel = koinViewModel<DetailViewModel>(parameters = { parametersOf(userId) }) //If your DetailViewModel took userID as parameter.
