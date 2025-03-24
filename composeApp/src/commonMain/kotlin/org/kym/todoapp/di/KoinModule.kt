@@ -10,8 +10,10 @@ import org.kym.todoapp.data.UserRepository
 import org.kym.todoapp.data.UserRepositoryImpl
 import org.kym.todoapp.viewModels.TestViewModel
 
+// platform specific implementation expected in platform specific packages
 expect val platformModule: Module
 
+// common modules that all targets will share
 val commonModule = module {
     singleOf<UserRepository>(::UserRepositoryImpl)
     viewModelOf(::TestViewModel)

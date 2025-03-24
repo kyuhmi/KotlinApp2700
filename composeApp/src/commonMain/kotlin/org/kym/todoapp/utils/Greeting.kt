@@ -1,4 +1,4 @@
-package org.kym.todoapp
+package org.kym.todoapp.utils
 
 class Greeting {
     private val platform = getPlatform()

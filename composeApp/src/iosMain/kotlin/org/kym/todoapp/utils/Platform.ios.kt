@@ -1,4 +1,4 @@
-package org.kym.todoapp
+package org.kym.todoapp.utils
 
 import platform.UIKit.UIDevice
 

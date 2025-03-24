@@ -1,7 +1,8 @@
-package org.kym.todoapp
+package org.kym.todoapp.viewModels
 
 import androidx.lifecycle.ViewModel
 import org.kym.todoapp.data.UserRepository
+import org.kym.todoapp.utils.getPlatform
 
 class UserViewModel(private val repository: UserRepository) : ViewModel() {
 

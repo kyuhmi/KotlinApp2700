@@ -1,4 +1,4 @@
-package org.kym.todoapp
+package org.kym.todoapp.utils
 
 class JVMPlatform: Platform {
     override val name: String = "Java ${System.getProperty("java.version")}"
