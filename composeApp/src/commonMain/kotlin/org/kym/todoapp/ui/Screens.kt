@@ -8,4 +8,5 @@ sealed class Screens(val route: String) {
     }
     data object TestDestination: Screens("test")
     data object Pomodoro: Screens("pomodoro")
+    data object PomodoroSettings: Screens("pomodoroSettings")
 }

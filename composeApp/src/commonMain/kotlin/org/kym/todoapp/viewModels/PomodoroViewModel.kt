@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.kym.todoapp.data.PomodoroPhase
+import org.kym.todoapp.data.PomodoroSettings
 import org.kym.todoapp.data.PomodoroTimerState
 import org.kym.todoapp.data.TimerState
 import org.kym.todoapp.platform.AlarmSoundPlayer
@@ -25,6 +26,7 @@ interface PomodoroViewModelActions {
     fun startWork()
     fun startShortBreak()
     fun startLongBreak()
+    fun updateSettings(newSettings: PomodoroSettings)
 }
 
 class PomodoroViewModel(
@@ -140,6 +142,19 @@ class PomodoroViewModel(
     override fun startWork() = startPhase(PomodoroPhase.WORK)
     override fun startShortBreak() = startPhase(PomodoroPhase.SHORT_BREAK)
     override fun startLongBreak() = startPhase(PomodoroPhase.LONG_BREAK)
+
+    override fun updateSettings(newSettings: PomodoroSettings) {
+        _timerState.update {
+            it.copy(
+                settings = newSettings,
+            )
+        }
+        // if there is a currently running job, let it finish. Otherwise, stop the timer to apply new settings
+        if (timerJob?.isActive != true) {
+            stop()
+        }
+        // optionally persist settings here, this can be done later.
+    }
 
     override fun pause() {
         _timerState.update { it.copy(timerState = TimerState.PAUSED) }

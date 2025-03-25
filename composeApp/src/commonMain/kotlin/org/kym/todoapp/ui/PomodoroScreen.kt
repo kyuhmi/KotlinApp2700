@@ -5,6 +5,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,6 +52,16 @@ fun PomodoroScreen(
             onAcknowledgeAlarm = {viewModel.acknowledgeAlarm()}
         )
         Text(text = "Pomodoros Completed: ${timerState.pomodoroCount}", fontSize = 16.sp)
+
+        // todo: figure out how to best organize this composable
+        Button(
+            onClick = { navController.navigate(Screens.PomodoroSettings.route) },
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Icon(Icons.Default.Settings, contentDescription = "Settings")
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Settings")
+        }
     }
 }
 @Composable

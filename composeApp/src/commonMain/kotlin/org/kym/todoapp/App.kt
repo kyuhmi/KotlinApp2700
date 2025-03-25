@@ -26,6 +26,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.kym.todoapp.ui.DetailScreen
 import org.kym.todoapp.ui.HomeScreen
 import org.kym.todoapp.ui.PomodoroScreen
+import org.kym.todoapp.ui.PomodoroSettingsScreen
 import org.kym.todoapp.ui.Screens
 import org.kym.todoapp.ui.TestDestinationScreen
 import org.kym.todoapp.viewModels.TestViewModel
@@ -37,6 +38,7 @@ fun App() {
         KoinContext {
             val navController = rememberNavController() // will be passed to screens that need it
 
+            // register endpoints here
             NavHost(
                 navController = navController,
                 startDestination = Screens.Home.route
@@ -58,12 +60,10 @@ fun App() {
                 composable(route = Screens.Pomodoro.route) {
                     PomodoroScreen(navController)
                 }
+                composable(route = Screens.PomodoroSettings.route) {
+                    PomodoroSettingsScreen(navController)
+                }
             }
         }
     }
-}
-
-// --- Example resource handling (replace with your actual resource system) ---
-object MyResources { // Replace with your Res class if needed
-    val composeMultiplatform = "Compose Multiplatform String" // Example string
 }

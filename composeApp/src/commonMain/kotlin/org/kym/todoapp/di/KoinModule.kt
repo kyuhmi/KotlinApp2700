@@ -6,8 +6,10 @@ import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
+import org.kym.todoapp.data.PomodoroSettings
 import org.kym.todoapp.data.UserRepository
 import org.kym.todoapp.data.UserRepositoryImpl
+import org.kym.todoapp.viewModels.PomodoroSettingsViewModel
 import org.kym.todoapp.viewModels.PomodoroViewModel
 import org.kym.todoapp.viewModels.TestViewModel
 
@@ -21,6 +23,7 @@ val commonModule = module {
 
     // pomodoro
     viewModelOf(::PomodoroViewModel)
+    viewModelOf(::PomodoroSettingsViewModel)
 }
 
 // Function to start Koin.  Platform-specific code will call this.
