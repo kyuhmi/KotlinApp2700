@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import org.kym.todoapp.data.PomodoroPhase
 import org.kym.todoapp.data.PomodoroTimerState
 import org.kym.todoapp.data.TimerState
+import org.kym.todoapp.platform.AlarmSoundPlayer
 
 interface PomodoroViewModelActions {
     fun start()
@@ -26,7 +27,9 @@ interface PomodoroViewModelActions {
     fun startLongBreak()
 }
 
-class PomodoroViewModel() : ViewModel(), PomodoroViewModelActions {
+class PomodoroViewModel(
+    private val alarmSoundPlayer: AlarmSoundPlayer // Inject the platform-specific alarm sound player
+) : ViewModel(), PomodoroViewModelActions {
     private val viewModelScope = CoroutineScope(Dispatchers.Main.immediate + Job()) // Use Dispatchers.Main.immediate if on main thread
 
     private val _timerState = MutableStateFlow(PomodoroTimerState())
@@ -36,6 +39,11 @@ class PomodoroViewModel() : ViewModel(), PomodoroViewModelActions {
 
     // start timer with specified phase
     private fun startPhase(pomodoroPhase: PomodoroPhase = PomodoroPhase.WORK) { //Default to start work
+        // if alarm is playing, stop it.
+        if (_timerState.value.isWaitingForAcknowledgement) {
+            acknowledgeAlarm()
+        }
+
         when (_timerState.value.timerState) {
             TimerState.PAUSED -> {
                 // resume from paused state without changing pomo phase
@@ -73,7 +81,7 @@ class PomodoroViewModel() : ViewModel(), PomodoroViewModelActions {
 
     private fun onTimerEnd(playAlarm: Boolean = true) {
         if (playAlarm) {
-            playAlarm() // play alarm sound
+            alarmSoundPlayer.playAlarmSound()
         }
 
         // set the state to waiting for acknowledgement
@@ -91,10 +99,6 @@ class PomodoroViewModel() : ViewModel(), PomodoroViewModelActions {
             PomodoroPhase.SHORT_BREAK -> _timerState.value.settings.shortBreakDuration
             PomodoroPhase.LONG_BREAK -> _timerState.value.settings.longBreakDuration
         }
-    }
-
-    private fun playAlarm() {
-        // TODO: Implement alarm sound playback
     }
 
     // function for updating pomodoro count based on current phase
@@ -143,6 +147,10 @@ class PomodoroViewModel() : ViewModel(), PomodoroViewModelActions {
     }
 
     override fun stop() {
+        // if alarm is playing, stop it.
+        if (_timerState.value.isWaitingForAcknowledgement) {
+            acknowledgeAlarm()
+        }
         _timerState.update {
             it.copy(
                 timerState = TimerState.STOPPED,
@@ -168,6 +176,9 @@ class PomodoroViewModel() : ViewModel(), PomodoroViewModelActions {
     override fun acknowledgeAlarm() {
         // if not waiting for acknowledgement, do nothing
         if (!_timerState.value.isWaitingForAcknowledgement) return
+
+        // stop the alarm sound
+        alarmSoundPlayer.stopAlarmSound()
 
         // Determine next phase without starting it
         val nextPhase = determineNextPhase(_timerState.value.currentPhase, _timerState.value.pomodoroCount)

@@ -19,9 +19,13 @@ import org.kym.todoapp.data.PomodoroPhase
 import org.kym.todoapp.data.PomodoroTimerState
 import org.kym.todoapp.viewModels.PomodoroViewModel
 import org.kym.todoapp.data.TimerState
+import org.kym.todoapp.platform.AlarmSoundPlayer
 
 @Composable
-fun PomodoroScreen(navController: NavController, viewModel: PomodoroViewModel = koinViewModel<PomodoroViewModel>()) {
+fun PomodoroScreen(
+    navController: NavController,
+    viewModel: PomodoroViewModel = koinViewModel<PomodoroViewModel>()
+) {
     val timerState by viewModel.timerState.collectAsState()
 
     Column(
@@ -140,7 +144,6 @@ fun Controls(
         }
     }
 }
-
 
 @Preview
 @Composable
