@@ -44,6 +44,11 @@ fun HomeScreen(navController: NavController) {
             Button(onClick = { navController.navigate(Screens.TestDestination.route)}) {
                 Text("Go to Test Destination")
             }
+            Button(onClick = {
+                navController.navigate(Screens.Pomodoro.route)
+            }) {
+                Text("Go to Pomodoro")
+            }
         }
     }
 }

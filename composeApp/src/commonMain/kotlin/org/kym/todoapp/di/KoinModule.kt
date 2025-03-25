@@ -8,6 +8,7 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
 import org.kym.todoapp.data.UserRepository
 import org.kym.todoapp.data.UserRepositoryImpl
+import org.kym.todoapp.viewModels.PomodoroViewModel
 import org.kym.todoapp.viewModels.TestViewModel
 
 // platform specific implementation expected in platform specific packages
@@ -17,6 +18,9 @@ expect val platformModule: Module
 val commonModule = module {
     singleOf<UserRepository>(::UserRepositoryImpl)
     viewModelOf(::TestViewModel)
+
+    // pomodoro
+    viewModelOf(::PomodoroViewModel)
 }
 
 // Function to start Koin.  Platform-specific code will call this.

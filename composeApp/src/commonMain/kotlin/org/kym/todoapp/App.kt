@@ -25,6 +25,7 @@ import org.koin.compose.KoinContext
 import org.koin.compose.viewmodel.koinViewModel
 import org.kym.todoapp.ui.DetailScreen
 import org.kym.todoapp.ui.HomeScreen
+import org.kym.todoapp.ui.PomodoroScreen
 import org.kym.todoapp.ui.Screens
 import org.kym.todoapp.ui.TestDestinationScreen
 import org.kym.todoapp.viewModels.TestViewModel
@@ -53,6 +54,9 @@ fun App() {
                 }
                 composable(route = Screens.TestDestination.route) {
                     TestDestinationScreen(navController = navController)
+                }
+                composable(route = Screens.Pomodoro.route) {
+                    PomodoroScreen(navController)
                 }
             }
         }
