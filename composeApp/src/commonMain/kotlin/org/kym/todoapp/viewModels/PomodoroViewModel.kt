@@ -14,31 +14,25 @@ import org.kym.todoapp.data.PomodoroPhase
 import org.kym.todoapp.data.PomodoroTimerState
 import org.kym.todoapp.data.TimerState
 
-class PomodoroViewModel() : ViewModel() {
+interface PomodoroViewModelActions {
+    fun start()
+    fun pause()
+    fun stop()
+    fun resetPomos()
+    fun skipPhaseAndStart()
+    fun acknowledgeAlarm()
+    fun startWork()
+    fun startShortBreak()
+    fun startLongBreak()
+}
+
+class PomodoroViewModel() : ViewModel(), PomodoroViewModelActions {
     private val viewModelScope = CoroutineScope(Dispatchers.Main.immediate + Job()) // Use Dispatchers.Main.immediate if on main thread
 
     private val _timerState = MutableStateFlow(PomodoroTimerState())
     val timerState: StateFlow<PomodoroTimerState> = _timerState.asStateFlow()
 
     private var timerJob: Job? = null
-
-    fun start() {
-        // only start if not already running
-        if (_timerState.value.timerState != TimerState.RUNNING) {
-            // if the method is called when timer is not acked, implied that we want to ack it.
-            if (_timerState.value.isWaitingForAcknowledgement) {
-                acknowledgeAlarm()
-            }
-            // resume if paused, otherwise start from current phase
-            _timerState.update { it.copy(timerState = TimerState.RUNNING) }
-            startTimerCoroutine()
-        }
-    }
-
-    // useful function aliases for starting specific states
-    fun startWork() = startPhase(PomodoroPhase.WORK)
-    fun startShortBreak() = startPhase(PomodoroPhase.SHORT_BREAK)
-    fun startLongBreak() = startPhase(PomodoroPhase.LONG_BREAK)
 
     // start timer with specified phase
     private fun startPhase(pomodoroPhase: PomodoroPhase = PomodoroPhase.WORK) { //Default to start work
@@ -77,39 +71,10 @@ class PomodoroViewModel() : ViewModel() {
         }
     }
 
-    fun pause() {
-        _timerState.update { it.copy(timerState = TimerState.PAUSED) }
-        timerJob?.cancel()
-    }
-
-    fun stop() {
-        _timerState.update {
-            it.copy(
-                timerState = TimerState.STOPPED,
-                currentPhase = PomodoroPhase.WORK,
-                timeRemaining = _timerState.value.settings.workDuration
-            )
-        } // Reset to work
-        timerJob?.cancel()
-    }
-
-    fun resetPomos() {
-        stop()
-        _timerState.update { it.copy(pomodoroCount = 0) }
-    }
-
-    fun skipPhaseAndStart() {
-        val nextPhase = determineNextPhase(_timerState.value.currentPhase, _timerState.value.pomodoroCount)
-        val nextCount = updatePomodoroCount(_timerState.value.currentPhase, _timerState.value.pomodoroCount)
-
-        // update count: act as if current phase is completed
-        _timerState.update { it.copy(pomodoroCount = nextCount) }
-
-        startPhase(nextPhase)
-    }
-
-    private fun onTimerEnd() {
-        playAlarm() // play alarm sound
+    private fun onTimerEnd(playAlarm: Boolean = true) {
+        if (playAlarm) {
+            playAlarm() // play alarm sound
+        }
 
         // set the state to waiting for acknowledgement
         _timerState.update {
@@ -125,33 +90,11 @@ class PomodoroViewModel() : ViewModel() {
             PomodoroPhase.WORK -> _timerState.value.settings.workDuration
             PomodoroPhase.SHORT_BREAK -> _timerState.value.settings.shortBreakDuration
             PomodoroPhase.LONG_BREAK -> _timerState.value.settings.longBreakDuration
-            else -> 0L // Or some default value, case shouldn't really happen
         }
     }
 
     private fun playAlarm() {
         // TODO: Implement alarm sound playback
-    }
-
-    // function for acknowledging the alarm and preparing timer for next phase
-    fun acknowledgeAlarm() {
-        // if not waiting for acknowledgement, do nothing
-        if (!_timerState.value.isWaitingForAcknowledgement) return
-
-        // Determine next phase without starting it
-        val nextPhase = determineNextPhase(_timerState.value.currentPhase, _timerState.value.pomodoroCount)
-        val nextCount = updatePomodoroCount(_timerState.value.currentPhase, _timerState.value.pomodoroCount)
-
-        // Update state to prepare for next phase
-        // Timer should already be stopped by onTimerEnd()
-        _timerState.update {
-            it.copy(
-                currentPhase = nextPhase,
-                pomodoroCount = nextCount,
-                timeRemaining = getDurationForPhase(nextPhase),
-                isWaitingForAcknowledgement = false
-            )
-        }
     }
 
     // function for updating pomodoro count based on current phase
@@ -173,6 +116,72 @@ class PomodoroViewModel() : ViewModel() {
                 }
             }
             PomodoroPhase.SHORT_BREAK, PomodoroPhase.LONG_BREAK -> PomodoroPhase.WORK
+        }
+    }
+
+    override fun start() {
+        // only start if not already running
+        if (_timerState.value.timerState != TimerState.RUNNING) {
+            // if the method is called when timer is not acked, implied that we want to ack it.
+            if (_timerState.value.isWaitingForAcknowledgement) {
+                acknowledgeAlarm()
+            }
+            // resume if paused, otherwise start from current phase
+            _timerState.update { it.copy(timerState = TimerState.RUNNING) }
+            startTimerCoroutine()
+        }
+    }
+
+    // useful function aliases for starting specific states
+    override fun startWork() = startPhase(PomodoroPhase.WORK)
+    override fun startShortBreak() = startPhase(PomodoroPhase.SHORT_BREAK)
+    override fun startLongBreak() = startPhase(PomodoroPhase.LONG_BREAK)
+
+    override fun pause() {
+        _timerState.update { it.copy(timerState = TimerState.PAUSED) }
+        timerJob?.cancel()
+    }
+
+    override fun stop() {
+        _timerState.update {
+            it.copy(
+                timerState = TimerState.STOPPED,
+                currentPhase = PomodoroPhase.WORK,
+                timeRemaining = _timerState.value.settings.workDuration
+            )
+        } // Reset to work
+        timerJob?.cancel()
+    }
+
+    override fun resetPomos() {
+        stop()
+        _timerState.update { it.copy(pomodoroCount = 0) }
+    }
+
+    override fun skipPhaseAndStart() {
+        onTimerEnd(playAlarm = false)
+        acknowledgeAlarm()
+        start()
+    }
+
+    // function for acknowledging the alarm and preparing timer for next phase
+    override fun acknowledgeAlarm() {
+        // if not waiting for acknowledgement, do nothing
+        if (!_timerState.value.isWaitingForAcknowledgement) return
+
+        // Determine next phase without starting it
+        val nextPhase = determineNextPhase(_timerState.value.currentPhase, _timerState.value.pomodoroCount)
+        val nextCount = updatePomodoroCount(_timerState.value.currentPhase, _timerState.value.pomodoroCount)
+
+        // Update state to prepare for next phase
+        // Timer should already be stopped by onTimerEnd()
+        _timerState.update {
+            it.copy(
+                currentPhase = nextPhase,
+                pomodoroCount = nextCount,
+                timeRemaining = getDurationForPhase(nextPhase),
+                isWaitingForAcknowledgement = false
+            )
         }
     }
 
