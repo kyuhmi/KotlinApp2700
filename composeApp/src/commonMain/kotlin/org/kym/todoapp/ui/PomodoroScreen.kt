@@ -36,14 +36,15 @@ fun PomodoroScreen(navController: NavController, viewModel: PomodoroViewModel = 
         Spacer(modifier = Modifier.height(16.dp))
         Controls(
             timerState = timerState,
-            onStart = { viewModel.startPhase() },
+            onStart = { viewModel.start() },
             onPause = { viewModel.pause() },
             onStop = { viewModel.stop() },
             onStartWork = {viewModel.startWork()},
             onStartShortBreak = {viewModel.startShortBreak()},
             onStartLongBreak = {viewModel.startLongBreak()},
             onResetPomos = {viewModel.resetPomos()},
-            onSkipPhaseAndStart = {viewModel.skipPhaseAndStart()}
+            onSkipPhaseAndStart = {viewModel.skipPhaseAndStart()},
+            onAcknowledgeAlarm = {viewModel.acknowledgeAlarm()}
         )
         Text(text = "Pomodoros Completed: ${timerState.pomodoroCount}", fontSize = 16.sp)
     }
@@ -83,7 +84,8 @@ fun Controls(
     onStartShortBreak: () -> Unit,
     onStartLongBreak: () -> Unit,
     onResetPomos: () -> Unit,
-    onSkipPhaseAndStart: () -> Unit
+    onSkipPhaseAndStart: () -> Unit,
+    onAcknowledgeAlarm: () -> Unit
 ) {
     val horizontalArrangement = Arrangement.spacedBy(8.dp)
     val verticalAlignment = Alignment.CenterVertically
@@ -132,6 +134,9 @@ fun Controls(
         }
         IconButton(onClick = onSkipPhaseAndStart) {
             Text("Skip")
+        }
+        IconButton(onClick = onAcknowledgeAlarm) {
+            Text("Ack")
         }
     }
 }

@@ -22,13 +22,26 @@ class PomodoroViewModel() : ViewModel() {
 
     private var timerJob: Job? = null
 
+    fun start() {
+        // only start if not already running
+        if (_timerState.value.timerState != TimerState.RUNNING) {
+            // if the method is called when timer is not acked, implied that we want to ack it.
+            if (_timerState.value.isWaitingForAcknowledgement) {
+                acknowledgeAlarm()
+            }
+            // resume if paused, otherwise start from current phase
+            _timerState.update { it.copy(timerState = TimerState.RUNNING) }
+            startTimerCoroutine()
+        }
+    }
+
     // useful function aliases for starting specific states
     fun startWork() = startPhase(PomodoroPhase.WORK)
     fun startShortBreak() = startPhase(PomodoroPhase.SHORT_BREAK)
     fun startLongBreak() = startPhase(PomodoroPhase.LONG_BREAK)
 
     // start timer with specified phase
-    fun startPhase(pomodoroPhase: PomodoroPhase = PomodoroPhase.WORK) { //Default to start work
+    private fun startPhase(pomodoroPhase: PomodoroPhase = PomodoroPhase.WORK) { //Default to start work
         when (_timerState.value.timerState) {
             TimerState.PAUSED -> {
                 // resume from paused state without changing pomo phase
@@ -74,7 +87,7 @@ class PomodoroViewModel() : ViewModel() {
             it.copy(
                 timerState = TimerState.STOPPED,
                 currentPhase = PomodoroPhase.WORK,
-                timeRemaining = 0L
+                timeRemaining = _timerState.value.settings.workDuration
             )
         } // Reset to work
         timerJob?.cancel()
@@ -86,42 +99,24 @@ class PomodoroViewModel() : ViewModel() {
     }
 
     fun skipPhaseAndStart() {
-        onTimerEnd() // we can just call this to simulate the behavior of the current phase ending
+        val nextPhase = determineNextPhase(_timerState.value.currentPhase, _timerState.value.pomodoroCount)
+        val nextCount = updatePomodoroCount(_timerState.value.currentPhase, _timerState.value.pomodoroCount)
+
+        // update count: act as if current phase is completed
+        _timerState.update { it.copy(pomodoroCount = nextCount) }
+
+        startPhase(nextPhase)
     }
 
     private fun onTimerEnd() {
-        when (_timerState.value.currentPhase) {
-            // case for when a work session ends
-            PomodoroPhase.WORK -> {
-                // Increment pomodoro count and determine next state
-                val updatedCount = _timerState.value.pomodoroCount + 1
-                val nextPhase =
-                    if (updatedCount % _timerState.value.settings.longBreakInterval == 0) {
-                        PomodoroPhase.LONG_BREAK
-                    } else {
-                        PomodoroPhase.SHORT_BREAK
-                    }
-                // Update state and start the next timer
-                _timerState.update {
-                    it.copy(
-                        pomodoroCount = updatedCount,
-                        timerState = TimerState.STOPPED // reset to stopped before starting next phase
-                    )
-                }
-                startPhase(nextPhase) // Auto-start the next break timer
-            }
-            // case for when a break session ends
-            PomodoroPhase.SHORT_BREAK, PomodoroPhase.LONG_BREAK -> {
-                // Transition back to WORK after a break
-                _timerState.update {
-                    it.copy(
-                        timerState = TimerState.STOPPED // reset to stopped before starting next phase
-                    )
-                }
-                startPhase(PomodoroPhase.WORK) // Auto-start the next work timer
-            }
-            // do nothing for other states
-            else -> {}
+        playAlarm() // play alarm sound
+
+        // set the state to waiting for acknowledgement
+        _timerState.update {
+            it.copy(
+                timerState = TimerState.STOPPED,
+                isWaitingForAcknowledgement = true
+            )
         }
     }
 
@@ -131,6 +126,53 @@ class PomodoroViewModel() : ViewModel() {
             PomodoroPhase.SHORT_BREAK -> _timerState.value.settings.shortBreakDuration
             PomodoroPhase.LONG_BREAK -> _timerState.value.settings.longBreakDuration
             else -> 0L // Or some default value, case shouldn't really happen
+        }
+    }
+
+    private fun playAlarm() {
+        // TODO: Implement alarm sound playback
+    }
+
+    // function for acknowledging the alarm and preparing timer for next phase
+    fun acknowledgeAlarm() {
+        // if not waiting for acknowledgement, do nothing
+        if (!_timerState.value.isWaitingForAcknowledgement) return
+
+        // Determine next phase without starting it
+        val nextPhase = determineNextPhase(_timerState.value.currentPhase, _timerState.value.pomodoroCount)
+        val nextCount = updatePomodoroCount(_timerState.value.currentPhase, _timerState.value.pomodoroCount)
+
+        // Update state to prepare for next phase
+        // Timer should already be stopped by onTimerEnd()
+        _timerState.update {
+            it.copy(
+                currentPhase = nextPhase,
+                pomodoroCount = nextCount,
+                timeRemaining = getDurationForPhase(nextPhase),
+                isWaitingForAcknowledgement = false
+            )
+        }
+    }
+
+    // function for updating pomodoro count based on current phase
+    private fun updatePomodoroCount(currentPhase: PomodoroPhase, currentCount: Int): Int {
+        return if (currentPhase == PomodoroPhase.WORK) currentCount + 1 else currentCount
+    }
+
+    // function for determining the next phase based on current phase and current pomodoro count
+    private fun determineNextPhase(currentPhase: PomodoroPhase, currentPomoCount: Int): PomodoroPhase {
+        return when (currentPhase) {
+            PomodoroPhase.WORK -> {
+                // assuming that this is called when the work phase is over, so implicitly
+                // there is one more completed pomodoro
+                val completedPomodoros = currentPomoCount + 1
+                if (completedPomodoros % _timerState.value.settings.longBreakInterval == 0) {
+                    PomodoroPhase.LONG_BREAK
+                } else {
+                    PomodoroPhase.SHORT_BREAK
+                }
+            }
+            PomodoroPhase.SHORT_BREAK, PomodoroPhase.LONG_BREAK -> PomodoroPhase.WORK
         }
     }
 
