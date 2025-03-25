@@ -42,7 +42,8 @@ fun PomodoroScreen(navController: NavController, viewModel: PomodoroViewModel = 
             onStartWork = {viewModel.startWork()},
             onStartShortBreak = {viewModel.startShortBreak()},
             onStartLongBreak = {viewModel.startLongBreak()},
-            onResetPomos = {viewModel.resetPomos()}
+            onResetPomos = {viewModel.resetPomos()},
+            onSkipPhaseAndStart = {viewModel.skipPhaseAndStart()}
         )
         Text(text = "Pomodoros Completed: ${timerState.pomodoroCount}", fontSize = 16.sp)
     }
@@ -81,11 +82,14 @@ fun Controls(
     onStartWork: () -> Unit,
     onStartShortBreak: () -> Unit,
     onStartLongBreak: () -> Unit,
-    onResetPomos: () -> Unit
+    onResetPomos: () -> Unit,
+    onSkipPhaseAndStart: () -> Unit
 ) {
+    val horizontalArrangement = Arrangement.spacedBy(8.dp)
+    val verticalAlignment = Alignment.CenterVertically
     Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        horizontalArrangement = horizontalArrangement,
+        verticalAlignment = verticalAlignment
     ) {
         if (timerState.timerState == TimerState.RUNNING) {
             IconButton(onClick = onPause) {
@@ -118,8 +122,16 @@ fun Controls(
         IconButton(onClick = onStartLongBreak) {
             Text("Long Break")
         }
+    }
+    Row(
+        horizontalArrangement = horizontalArrangement,
+        verticalAlignment = verticalAlignment
+    ) {
         IconButton(onClick = onResetPomos) {
             Text("Reset")
+        }
+        IconButton(onClick = onSkipPhaseAndStart) {
+            Text("Skip")
         }
     }
 }

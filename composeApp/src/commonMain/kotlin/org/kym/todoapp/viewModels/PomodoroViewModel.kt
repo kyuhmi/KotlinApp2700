@@ -85,6 +85,10 @@ class PomodoroViewModel() : ViewModel() {
         _timerState.update { it.copy(pomodoroCount = 0) }
     }
 
+    fun skipPhaseAndStart() {
+        onTimerEnd() // we can just call this to simulate the behavior of the current phase ending
+    }
+
     private fun onTimerEnd() {
         when (_timerState.value.currentPhase) {
             // case for when a work session ends

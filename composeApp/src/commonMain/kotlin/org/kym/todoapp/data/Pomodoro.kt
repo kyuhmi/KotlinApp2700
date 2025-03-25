@@ -5,9 +5,9 @@ data class PomodoroSettings(
 //    val shortBreakDuration: Long = 5 * 60 * 1000L, // 5 minutes
 //    val longBreakDuration: Long = 15 * 60 * 1000L, // 15 minutes
 //    val longBreakInterval: Int = 4, // Long break after every 4 Pomodoros
-    val workDuration: Long = 5 * 1000L, // Milliseconds (30 seconds)
-    val shortBreakDuration: Long = 3 * 1000L, // 15 seconds
-    val longBreakDuration: Long = 10 * 1000L, // 45 seconds
+    val workDuration: Long = 5 * 1000L, // 5 seconds
+    val shortBreakDuration: Long = 3 * 1000L, // 3 seconds
+    val longBreakDuration: Long = 10 * 1000L, // 10 seconds
     val longBreakInterval: Int = 4, // Long break after every 4 Pomodoros
 )
 
