@@ -67,7 +67,7 @@ fun TimePickerWidget(
                 onValueChange = { input ->
                     // only accept digits and limit to 2 chars
                     if (input.length <= 2 && input.all { it.isDigit() }) {
-                        minutesText = input.padStart(2, '0')
+                        minutesText = input
                         if (input.isNotEmpty()) {
                             val newMinutes = input.toInt().coerceIn(0, 99)
                             if (newMinutes != minutes) {

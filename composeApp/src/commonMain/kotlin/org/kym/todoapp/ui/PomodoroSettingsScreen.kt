@@ -133,7 +133,7 @@ fun PomodoroSettingsScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Long Break interval
-        Text("Long Break Interval (Pomodoros)", fontSize = 22.sp)
+        Text("Long Break Interval (Pomodoros)", fontSize = 22.sp, modifier = Modifier.padding(bottom = 8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             // button to decrease long break interval
             IconButton(
