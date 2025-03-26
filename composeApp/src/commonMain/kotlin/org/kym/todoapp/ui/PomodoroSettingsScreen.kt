@@ -1,5 +1,6 @@
 package org.kym.todoapp.ui
 
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -43,14 +46,17 @@ import org.kym.todoapp.viewModels.PomodoroViewModel
 fun PomodoroSettingsScreen(
     navController: NavController,
     parentViewModel: PomodoroViewModel = koinViewModel(
-        viewModelStoreOwner = remember { navController.getBackStackEntry("pomodoro") }
+        viewModelStoreOwner = remember { navController.getBackStackEntry(Screens.Pomodoro.route) } // get parent viewmodel from backstack
     ),
     settingsViewModel: PomodoroSettingsViewModel = koinViewModel()
 ) {
+    // scrollable state
+    val scrollState = rememberScrollState()
+
     // get parent timer state
     val timerState by parentViewModel.timerState.collectAsState()
 
-    // initialize settings viewmodel with current settings from parent timer state each time
+    // initialize settings viewmodel with current settings from parent timer state each time the screen is recomposed
     settingsViewModel.initializeWith(timerState.settings)
 
     // collect settings from initialized settings viewmodel
@@ -73,8 +79,9 @@ fun PomodoroSettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.Start
+            .padding(16.dp)
+            .verticalScroll(scrollState),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Header with back button
         Row(
@@ -86,14 +93,14 @@ fun PomodoroSettingsScreen(
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
             // todo: figure this out
-            Text(text = "Pomodoro Settings", fontSize = 36.sp)
+            Text(text = "Pomodoro Settings", fontSize = 24.sp)
             Spacer(Modifier.width(48.dp))
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Work Duration timer picker
-        Text("Work Duration", fontSize = 24.sp)
+        Text("Work Duration", fontSize = 22.sp)
         TimePickerWidget(
             minutes = workMinutes,
             seconds = workSeconds,
@@ -104,7 +111,7 @@ fun PomodoroSettingsScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Short Break Duration timer picker
-        Text("Short Break Duration", fontSize = 24.sp)
+        Text("Short Break Duration", fontSize = 22.sp)
         TimePickerWidget(
             minutes = shortBreakMinutes,
             seconds = shortBreakSeconds,
@@ -115,6 +122,7 @@ fun PomodoroSettingsScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Long Break Duration timer picker
+        Text("Long Break Duration", fontSize = 22.sp)
         TimePickerWidget(
             minutes = longBreakMinutes,
             seconds = longBreakSeconds,
@@ -125,7 +133,7 @@ fun PomodoroSettingsScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Long Break interval
-        Text("Long Break Interval (Pomodoros)", fontSize = 24.sp)
+        Text("Long Break Interval (Pomodoros)", fontSize = 22.sp)
         Row(verticalAlignment = Alignment.CenterVertically) {
             // button to decrease long break interval
             IconButton(
@@ -143,7 +151,8 @@ fun PomodoroSettingsScreen(
                 onValueChange = { longBreakInterval = it }, // update state on change
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.width(80.dp),
-                textStyle = TextStyle(textAlign = TextAlign.Center)
+                textStyle = TextStyle(textAlign = TextAlign.Center),
+                singleLine = true
             )
 
             // button to increase long break interval

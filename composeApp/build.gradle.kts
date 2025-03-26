@@ -117,6 +117,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.compose.foundation:foundation-android:1.7.8")
     debugImplementation(compose.uiTooling)
 }
 

@@ -9,10 +9,11 @@ import org.kym.todoapp.data.DEFAULT_POMODORO_SETTINGS
 import org.kym.todoapp.data.PomodoroSettings
 
 class PomodoroSettingsViewModel : ViewModel() {
+    // StateFlow to hold the current settings
     private val _settings = MutableStateFlow(DEFAULT_POMODORO_SETTINGS)
     val settings: StateFlow<PomodoroSettings> = _settings.asStateFlow()
 
-    // Initialize with current settings from parent ViewModel
+    // Initialize with current settings from passed in PomodoroTimerState
     fun initializeWith(currentSettings: PomodoroSettings) {
         _settings.value = currentSettings
     }

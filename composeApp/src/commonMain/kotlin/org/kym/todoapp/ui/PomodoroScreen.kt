@@ -64,6 +64,7 @@ fun PomodoroScreen(
         }
     }
 }
+
 @Composable
 fun PomodoroStatus(timerState: PomodoroTimerState){
     val phaseText = when(timerState.timerState) {
