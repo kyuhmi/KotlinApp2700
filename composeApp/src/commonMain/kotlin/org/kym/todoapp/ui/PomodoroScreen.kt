@@ -36,7 +36,7 @@ fun PomodoroScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        TimerDisplay(timerState.timeRemaining)
+        TimerDisplay(timerState.timeRemaining, timerState.isWaitingForAcknowledgement)
         PomodoroStatus(timerState)
         Spacer(modifier = Modifier.height(16.dp))
         Controls(
@@ -81,13 +81,25 @@ fun PomodoroStatus(timerState: PomodoroTimerState){
 }
 
 @Composable
-fun TimerDisplay(timeRemaining: Long) {
+fun TimerDisplay(timeRemaining: Long, waitingForAcknowledgement: Boolean) {
     val minutes = (timeRemaining / 1000) / 60
     val seconds = (timeRemaining / 1000) % 60
-    Text(
-        text = "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}",
-        fontSize = 48.sp
-    )
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // timer text
+        Text(
+            text = "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}",
+            fontSize = 48.sp
+        )
+
+        // blinking dot
+        if (waitingForAcknowledgement) {
+            Spacer(Modifier.width(12.dp))
+            BlinkingDotIndicator()
+        }
+    }
 }
 
 @Composable
